@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # currency_converter
 
 A new Flutter project.
@@ -14,3 +15,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# CurrencyConverterASD
+Applicazione sviluppata per la conversione delle valute (EUR-USD-GBP)
+>>>>>>> a75e06d6754d150a6b16a5e685097baa75537627
