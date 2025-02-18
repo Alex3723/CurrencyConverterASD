@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:currency_converter/detail_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const CurrencyConverter(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -44,16 +45,18 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
   Future<void> _convert() async {
     setState(() {
       _isLoading = true;
-      _error = null; 
+      _error = null;
     });
 
-    final url = Uri.parse('https://v6.exchangerate-api.com/v6/$_apiKey/latest/$_fromCurrency');
+    final url = Uri.parse(
+        'https://v6.exchangerate-api.com/v6/$_apiKey/latest/$_fromCurrency');
 
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        final double conversionRate = data['conversion_rates']?[_toCurrency] ?? 1.0;
+        final double conversionRate =
+            data['conversion_rates']?[_toCurrency] ?? 1.0;
 
         setState(() {
           double amount = double.tryParse(_amountController.text) ?? 0.0;
@@ -113,10 +116,9 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
                   }).toList(),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.price_change_sharp), // Icona freccia di refresh
+                  icon: const Icon(Icons.price_change_sharp),
                   onPressed: () {
                     setState(() {
-                      // Scambia le valute
                       String temp = _fromCurrency;
                       _fromCurrency = _toCurrency;
                       _toCurrency = temp;
@@ -140,37 +142,6 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _convert,  // Disabilita durante il caricamento
-              child: _isLoading
-                  ? const CircularProgressIndicator()  // Mostra il caricamento
-                  : const Text('Converti'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Risultato: $_convertedAmount $_toCurrency',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-
-            /*ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailScreen(
-                      amount: double.tryParse(_amountController.text) ?? 0.0,
-                      fromCurrency: _fromCurrency,
-                      toCurrency: _toCurrency,
-          
-                      convertedAmount: _convertedAmount,
-                    ),
-                  ),
-                );
-              },
-              child: const Text('Dettagli'),
-            ),*/
             if (_error != null)
               Text(
                 _error!,
@@ -179,9 +150,33 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
             if (_error == null && !_isLoading)
               Text(
                 'Risultato: $_convertedAmount $_toCurrency',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _convert,
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Converti'),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailScreen(
+                      amount: double.tryParse(_amountController.text) ?? 0.0,
+                      fromCurrency: _fromCurrency,
+                      toCurrency: _toCurrency,
+                      convertedAmount: _convertedAmount,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Dettagli'),
+            ),
           ],
         ),
       ),

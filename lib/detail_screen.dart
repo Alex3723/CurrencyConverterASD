@@ -4,7 +4,6 @@ class DetailScreen extends StatelessWidget {
   final double amount;
   final String fromCurrency;
   final String toCurrency;
-  final double conversionRate;
   final double convertedAmount;
 
   const DetailScreen({
@@ -12,7 +11,6 @@ class DetailScreen extends StatelessWidget {
     required this.amount,
     required this.fromCurrency,
     required this.toCurrency,
-    required this.conversionRate,
     required this.convertedAmount,
   });
 
@@ -28,25 +26,23 @@ class DetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Importo Iniziale: $amount $fromCurrency',
-              style: const TextStyle(fontSize: 18),
+              'Importo inserito: $amount $fromCurrency',
+              style: const TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 10),
             Text(
-              'Tasso di Cambio: 1 $fromCurrency = $conversionRate $toCurrency',
-              style: const TextStyle(fontSize: 18),
+              'Valuta di partenza: $fromCurrency',
+              style: const TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 10),
             Text(
-              'Importo Convertito: $convertedAmount $toCurrency',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Valuta di destinazione: $toCurrency',
+              style: const TextStyle(fontSize: 20),
             ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Torna Indietro'),
+            const SizedBox(height: 10),
+            Text(
+              'Risultato della conversione: $convertedAmount $toCurrency',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ],
         ),
