@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'detail_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 void main() {
   runApp(const MyApp());
@@ -31,16 +33,46 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
   final TextEditingController _amountController = TextEditingController();
   String _fromCurrency = 'EUR';
   String _toCurrency = 'USD';
-  final double _conversionRate = 1.1;
   double _convertedAmount = 0.0;
+  bool _isLoading = false;
+  String? _error;
 
   final List<String> _currencies = ['EUR', 'USD', 'GBP'];
 
-  void _convert() {
+  final String _apiKey = 'fa83865828aea6d72d320ebd';
+
+  Future<void> _convert() async {
     setState(() {
-      double amount = double.tryParse(_amountController.text) ?? 0.0;
-      _convertedAmount = amount * _conversionRate;
+      _isLoading = true;
+      _error = null; 
     });
+
+    final url = Uri.parse('https://v6.exchangerate-api.com/v6/$_apiKey/latest/$_fromCurrency');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final double conversionRate = data['conversion_rates']?[_toCurrency] ?? 1.0;
+
+        setState(() {
+          double amount = double.tryParse(_amountController.text) ?? 0.0;
+          _convertedAmount = amount * conversionRate;
+        });
+      } else {
+        setState(() {
+          _error = 'Errore nella richiesta al server';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Errore: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -72,14 +104,25 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
                       _fromCurrency = newValue!;
                     });
                   },
-                  items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                  items:
+                      _currencies.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
                     );
                   }).toList(),
                 ),
-                const Text('→'),
+                IconButton(
+                  icon: const Icon(Icons.price_change_sharp), // Icona freccia di refresh
+                  onPressed: () {
+                    setState(() {
+                      // Scambia le valute
+                      String temp = _fromCurrency;
+                      _fromCurrency = _toCurrency;
+                      _toCurrency = temp;
+                    });
+                  },
+                ),
                 DropdownButton<String>(
                   value: _toCurrency,
                   onChanged: (String? newValue) {
@@ -87,7 +130,8 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
                       _toCurrency = newValue!;
                     });
                   },
-                  items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                  items:
+                      _currencies.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -98,10 +142,10 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                _convert();
-              },
-              child: const Text('Converti'),
+              onPressed: _isLoading ? null : _convert,  // Disabilita durante il caricamento
+              child: _isLoading
+                  ? const CircularProgressIndicator()  // Mostra il caricamento
+                  : const Text('Converti'),
             ),
             const SizedBox(height: 20),
             Text(
@@ -109,7 +153,8 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-            ElevatedButton(
+
+            /*ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -118,14 +163,25 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
                       amount: double.tryParse(_amountController.text) ?? 0.0,
                       fromCurrency: _fromCurrency,
                       toCurrency: _toCurrency,
-                      conversionRate: _conversionRate,
+          
                       convertedAmount: _convertedAmount,
                     ),
                   ),
                 );
               },
               child: const Text('Dettagli'),
-            ),
+            ),*/
+            if (_error != null)
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            if (_error == null && !_isLoading)
+              Text(
+                'Risultato: $_convertedAmount $_toCurrency',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+
           ],
         ),
       ),
