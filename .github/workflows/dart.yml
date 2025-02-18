@@ -13,8 +13,8 @@ on:
 
 jobs:
   build:
+    name : Build and Analyze
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +23,16 @@ jobs:
       # https://github.com/dart-lang/setup-dart/blob/main/README.md
       # - uses: dart-lang/setup-dart@v1
       - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+
+      - name : Install flutter
+        uses : subosito/flutter-action@v2
+        with:
+           channel: 'stable'
+           flutter-version: '3.27.1'
+
+      - name : Clean project
+        run : flutter clean
+      
 
       - name: Install dependencies
         run: flutter pub get
