@@ -52,13 +52,5 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Commit for build
-        run : |
-           git config user.email "alejordi23@gmail.com"
-           git config  user.name "Alex3723"
-           git add build/app/outputs/flutter-apk/app-release.apk
-           git commit -m "Build"
-           git push
-
 
 
