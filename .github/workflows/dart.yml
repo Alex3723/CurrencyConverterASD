@@ -52,6 +52,11 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
+      - name: Commit for build
+        run : |
+         git add build/app/outputs/flutter-apk/app-release.apk
+         git commit -m "Build"
+         git push
 
 
 
