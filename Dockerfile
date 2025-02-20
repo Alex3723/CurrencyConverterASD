@@ -10,6 +10,10 @@ WORKDIR /opt
 RUN git clone https://github.com/flutter/flutter.git -b stable --depth 1
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
 
+# Fetch and checkout stable branch
+WORKDIR /opt/flutter
+RUN git fetch --all && git checkout stable
+
 # Fix permissions to ensure flutter user can execute commands
 RUN useradd -m flutteruser && \
     chown -R flutteruser:flutteruser /opt/flutter && \
