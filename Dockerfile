@@ -3,7 +3,7 @@ FROM dart:stable as flutter-app
 # Installa le dipendenze di sistema come root
 USER root
 RUN apt-get update && \
-    apt-get install -y unzip xz-utils zip libglu1-mesa git && \
+    apt-get install -y unzip xz-utils zip libglu1-mesa git curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Crea un gruppo e un utente non root per eseguire Flutter
