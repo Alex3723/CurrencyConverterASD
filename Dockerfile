@@ -1,49 +1,66 @@
-FROM dart:stable
+FROM dart:stable as flutter-app
 
-# Install dependencies
+# Installa le dipendenze di sistema come root
+USER root
 RUN apt-get update && \
     apt-get install -y unzip xz-utils zip libglu1-mesa git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Flutter SDK
-WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b stable --depth 1
-ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
+# Crea un gruppo e un utente non root per eseguire Flutter
+RUN groupadd -r flutteruser && useradd -ms /bin/bash -g flutteruser flutteruser
 
-# Fetch and checkout stable branch
-WORKDIR /opt/flutter
-RUN git fetch --all && git checkout stable
+# Crea la directory /opt/flutter con i permessi giusti
+RUN mkdir -p /opt/flutter && chown flutteruser:flutteruser /opt/flutter
 
-# Fix permissions to ensure flutter user can execute commands
-RUN useradd -m flutteruser && \
-    chown -R flutteruser:flutteruser /opt/flutter && \
-    chmod -R 755 /opt/flutter
-
+# Passa a questo utente per il resto dei comandi
 USER flutteruser
 
-# Run flutter commands
+# Scarica Flutter SDK
+WORKDIR /opt
+RUN git clone https://github.com/flutter/flutter.git -b 3.27.1 --depth 1
+
+# Aggiungi Flutter al PATH
+ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
+# Assicura che Flutter sia riconosciuto correttamente
 RUN flutter precache
+
+# Accetta le licenze Android se necessarie
 RUN yes | flutter doctor --android-licenses
+
+# Esegui il doctor per garantire che l'ambiente sia pronto
+RUN /opt/flutter/bin/flutter --version
 RUN flutter doctor -v
 
-# Set the working directory for app
+# Imposta la cartella di lavoro dell'app
 WORKDIR /app
 
-# Copy the app code into the container
+# Assicura che flutteruser abbia i permessi sulla cartella dell'app
+RUN chown -R flutteruser:flutteruser /app
+
+# Copia i file del progetto Flutter nella cartella dell'app
 COPY . .
 
-# Get dependencies, analyze, and test
+# Esegui flutter pub get per installare le dipendenze
 RUN flutter pub get
+
+# Analizza il progetto
 RUN flutter analyze
+
+# Esegui i test
 RUN flutter test
 
-# Build the app for web
+# Crea la build per il web
 RUN flutter build web --release
 
-# Use NGINX to serve the built app
+# Usa un'immagine nginx per servire l'app
 FROM nginx:alpine
-COPY --from=0 /app/build/web /usr/share/nginx/html
 
+# Copia i file della build dal primo stage
+COPY --from=flutter-app /app/build/web /usr/share/nginx/html
+
+# Espone la porta per il server web
 EXPOSE 8090
 
+# Avvia nginx in modalità foreground
 CMD ["nginx", "-g", "daemon off;"]

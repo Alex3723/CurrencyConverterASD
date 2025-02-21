@@ -7,17 +7,18 @@ services:
       dockerfile: Dockerfile
     container_name: flutter_app_container
     ports:
-      - "8090:80"
+      - "8090:80"  # Porta per il servizio Flutter (da configurare a seconda delle tue necessità)
 
   nginx:
     image: nginx:alpine
     container_name: nginx_container
     ports:
-      - "8080:80"
+      - "8080:80"  # Porta per il server Nginx
     volumes:
-      - ./build/web:/usr/share/nginx/html
+      - ./build/web:/usr/share/nginx/html  # Monta il build della tua app Flutter nella cartella nginx
     depends_on:
-      - flutter-app
+      - flutter-app  # Assicura che il container flutter-app venga avviato prima di nginx
 
 volumes:
   flutter-web:
+    external: true  # Se vuoi usare un volume persistente, puoi definirlo così
