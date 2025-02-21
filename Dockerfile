@@ -41,7 +41,15 @@ RUN chown -R flutteruser:flutteruser /app
 # Copia i file del progetto Flutter nella cartella dell'app
 COPY . .
 
-# Esegui flutter pub get per installare le dipendenze
+# Rimuovi eventuali file problemáticos prima di procedere
+USER root
+RUN rm -rf /app/.dart_tool /app/build /app/.flutter-plugins
+
+# Assicura che flutteruser abbia i permessi sui file copiati
+RUN chown -R flutteruser:flutteruser /app
+USER flutteruser
+
+
 RUN flutter pub get
 
 # Analizza il progetto
